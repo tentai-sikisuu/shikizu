@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0D0D1A">
-<title>天体色数® 天体式図</title>
+<title>天体色数® 天体色数図</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="天体式図">
+<meta name="apple-mobile-web-app-title" content="天体色数図">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#C9A84C;--deep:#0D0D1A;--panel:#0f1030;--soft:#F5F0E8;--accent:#E8D5A3;
@@ -89,7 +88,7 @@ input::placeholder{color:rgba(245,240,232,.3);}
 
 @media (min-width:600px){.sheet{--chart:min(calc(100svh - 210px),520px);}}
 
-/* ===== 印刷：天体式図だけ ===== */
+/* ===== 印刷：天体色数図だけ ===== */
 @media print{
   @page{size:A4 portrait;margin:0;}
   html,body{width:210mm;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;
@@ -114,7 +113,7 @@ input::placeholder{color:rgba(245,240,232,.3);}
   <header>
     <div class="title-en">Celestial Color Number</div>
     <h1>天体色数<sup>®</sup></h1>
-    <div class="subtitle">天体式図 自動計算</div>
+    <div class="subtitle">天体色数図 自動計算</div>
   </header>
   <div class="card">
     <div class="field">
@@ -142,14 +141,14 @@ input::placeholder{color:rgba(245,240,232,.3);}
       <input type="text" id="birth-place" placeholder="例：大阪府大阪市" autocomplete="off">
       <div class="hint" id="place-hint"></div>
     </div>
-    <button class="btn" type="button" onclick="run()">天体式図を出す</button>
+    <button class="btn" type="button" onclick="run()">天体色数図を出す</button>
     <div id="error-msg" class="error-msg" role="alert"></div>
   </div>
 </main>
 
 <div id="result-view" hidden>
   <section class="sheet" id="sheet">
-    <div class="sheet-title" id="result-title">天体式図</div>
+    <div class="sheet-title" id="result-title">天体色数図</div>
     <div class="top-row">
       <div class="badge">
         <div class="badge-label">男性色数</div>
@@ -593,7 +592,7 @@ function computeChart(birthdate, planets){
   return {unmei,mapping,supportNum,male:info(male),female:info(female),total:info(total)};
 }
 
-// ===== 天体式図SVG =====
+// ===== 天体色数図SVG =====
 function buildChart(planets, mapping, supportNum){
   const RING=[
     {sign:'Capricorn',ja:'やぎ',hex:'#1A237E'},{sign:'Sagittarius',ja:'いて',hex:'#4A90D9'},
@@ -613,7 +612,7 @@ function buildChart(planets, mapping, supportNum){
   const PP={}; ORDER.forEach((k,i)=>PP[k]=innerPos(i)); PP.Sun={x:cx,y:cy};
   const f=v=>v.toFixed(1);
 
-  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 18 464 464" width="464" height="464" class="chart-svg" role="img" aria-label="天体式図">
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 18 464 464" width="464" height="464" class="chart-svg" role="img" aria-label="天体色数図">
   <defs><radialGradient id="bgGrad" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#1a1a5e"/><stop offset="60%" stop-color="#0d0d3b"/><stop offset="100%" stop-color="#05050f"/></radialGradient></defs>
   <rect width="${W}" height="${H}" fill="url(#bgGrad)"/>`;
   let sx=0.7141,sy=0.3731;
@@ -733,7 +732,7 @@ function run(){
   }
 
   const name=$('clientname').value.trim();
-  $('result-title').textContent=name?`${name} 様の天体式図`:'天体式図';
+  $('result-title').textContent=name?`${name} 様の天体色数図`:'天体色数図';
   $('unmei-display').textContent=res.unmei;
   $('celestial-chart').innerHTML=buildChart(planets,res.mapping,res.supportNum);
   setBadge('male',res.male); setBadge('female',res.female); setBadge('total',res.total);
@@ -765,7 +764,7 @@ async function saveImage(){
     x.fillStyle='#14141f'; x.fillRect(0,0,W,H);
     const serif='"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif';
     x.textAlign='center'; x.fillStyle='#C9A84C';
-    x.font=`32px ${serif}`; x.fillText(name?`${name} 様の天体式図`:'天体式図',W/2,78);
+    x.font=`32px ${serif}`; x.fillText(name?`${name} 様の天体色数図`:'天体色数図',W/2,78);
     // 上段バッジ
     const badge=(bx,by,bw,bh,label,info)=>{
       x.strokeStyle='#C9A84C'; x.lineWidth=2; x.fillStyle='#0f1030';
@@ -786,10 +785,10 @@ async function saveImage(){
     x.drawImage(img,(W-860)/2,285,860,860);
     badge(W/2-170,1170,340,150,'統合色数',res.total);
     const blob=await new Promise(ok=>c.toBlob(ok,'image/png'));
-    const fname=(name||'tenkaisusuu')+'_天体式図.png';
+    const fname=(name||'tenkaisusuu')+'_天体色数図.png';
     const file=new File([blob],fname,{type:'image/png'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:'天体式図'});
+      await navigator.share({files:[file],title:'天体色数図'});
     }else{
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href),4000);
