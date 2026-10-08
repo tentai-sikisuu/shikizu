@@ -888,6 +888,16 @@ function stardustLayer(ringRatio){
     + '" style="position:absolute;left:-60%;top:-60%;width:220%;height:220%;max-width:none;z-index:-1;pointer-events:none;">';
 }
 
+// 星屑の画像の読み込みが終わってから印刷する（終わる前に印刷すると星屑が出ない）
+function printWhenReady(box){
+  var img = box.querySelector('img.stardust'), done = false;
+  var go = function(){ if(done) return; done = true; setTimeout(function(){ window.print(); }, 80); };
+  if(!img){ go(); return; }
+  if(img.decode){ img.decode().then(go, go); }
+  else if(img.complete){ go(); }
+  else { img.onload = go; img.onerror = go; }
+  setTimeout(go, 2000);
+}
 function whitenChartSvg(html){
   var box = document.createElement('div'); box.innerHTML = html;
   var svg = box.querySelector('svg'); if(!svg) return html;
@@ -915,7 +925,7 @@ function savePDF(theme){
   if(!chart._navy) chart._navy=chart.innerHTML;
   if(theme==='white'){ chart.innerHTML=whitenChartSvg(chart._navy)+stardustLayer(231/476); document.documentElement.classList.add('print-white'); }
   else { chart.innerHTML=chart._navy; document.documentElement.classList.remove('print-white'); }
-  window.print();
+  printWhenReady(chart);
 }
 window.addEventListener('afterprint',()=>{
   const chart=$('celestial-chart');
