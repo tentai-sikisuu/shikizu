@@ -851,16 +851,24 @@ function stardustLayer(ringRatio){
       p += (k?'L':'M')+f(x+l*Math.cos(a))+' '+f(y+l*Math.sin(a)); }
     return '<path d="'+p+'Z" fill="'+G+'" opacity="'+o.toFixed(2)+'"/>';
   };
+  // きらめき（中心から細く伸びる8本の光。縦横は長く、ななめは短く）
+  var glint = function(x,y,s,o){
+    var p = '', w = s*0.075;
+    for(var k=0;k<8;k++){
+      var a = Math.PI*k/4 - Math.PI/2, l = (k%2) ? s*0.45 : s, ca = Math.cos(a), sa = Math.sin(a), ww = (k%2) ? w*0.7 : w;
+      p += 'M'+f(x-sa*ww)+' '+f(y+ca*ww)+'L'+f(x+ca*l)+' '+f(y+sa*l)+'L'+f(x+sa*ww)+' '+f(y-ca*ww)+'Z';
+    }
+    return '<g opacity="'+o.toFixed(2)+'"><path d="'+p+'" fill="'+G+'"/><circle cx="'+f(x)+'" cy="'+f(y)+'" r="'+f(s*0.13)+'" fill="'+G+'"/></g>';
+  };
   var put = function(x,y){
     var r = rnd();
     if(r < 0.18){            // 大きい星（さっきの見本と同じ割合）
       var k = rnd(), o = R(0.6,0.85);
-      if(k < 0.6)       out += curved(x,y,R(6,11),o);
-      else if(k < 0.82) out += spiky(x,y,R(7,11),o);
-      else              out += lines(x,y,R(6,9),o,4,true);
+      if(k < 0.82)      out += glint(x,y,R(6,11),o);
+            else              out += lines(x,y,R(6,9),o,4,true);
     } else if(r < 0.45){     // 中くらいの星
       var k2 = rnd(), o2 = R(0.5,0.75);
-      if(k2 < 0.45)      out += curved(x,y,R(2.5,4.5),o2);
+      if(k2 < 0.45)      out += glint(x,y,R(3,5),o2);
       else if(k2 < 0.65) out += lines(x,y,R(3,4.5),o2,3,false);
       else if(k2 < 0.85) out += lines(x,y,R(3,4.5),o2,4,true);
       else               out += ring(x,y,R(1.2,2),o2);
@@ -932,7 +940,7 @@ if(/Line\/|Instagram|FBAN|FBAV|FB_IAB|Twitter|TikTok|musical_ly/i.test(navigator
 
 <script>
 // ===== バージョン管理（ツールを改定したら TOOL_VERSION を上げる） =====
-var TOOL_VERSION = '2026.10';
+var TOOL_VERSION = '2026.10.9';
 var TOOL_SOURCE_URL = '';/*@@SRC@@*/   // ← パソコンに保存した時に、元のURLが自動で書き込まれる
 var TOOL_FILE_NAME = '天体色数図自動計算ツール.html';
 (function(){
