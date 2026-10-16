@@ -66,7 +66,7 @@ input::placeholder{color:rgba(245,240,232,.3);}
 .badge-body{display:flex;align-items:center;justify-content:center;gap:7px;}
 .badge-dot{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.35);}
 .badge-text{min-width:0;line-height:1.25;}
-.badge-color{font-size:13px;font-weight:600;white-space:nowrap;}
+.badge-color{font-size:13px;font-weight:600;white-space:normal;word-break:keep-all;overflow-wrap:normal;}
 .badge-sign{font-size:10px;color:rgba(245,240,232,.6);white-space:nowrap;}
 .unmei{text-align:center;padding:0 4px;}
 .unmei-label{font-size:10px;letter-spacing:1px;color:rgba(245,240,232,.65);white-space:nowrap;}
@@ -843,7 +843,10 @@ function run(){
 }
 function setBadge(p,info){
   $(p+'-dot').style.background=info.hex;
-  $(p+'-color').textContent=info.color;
+  // 長い色名は、入りきらない時だけ区切りのいい所で2行に（例：ロイヤル／ブルー）
+  var _c=String(info.color), _b={'ロイヤルブルー':['ロイヤル','ブルー'],'ヴァイオレット':['ヴァイ','オレット']}[_c];
+  if(_b){ var el=$(p+'-color'); el.textContent=''; el.appendChild(document.createTextNode(_b[0])); el.appendChild(document.createElement('wbr')); el.appendChild(document.createTextNode(_b[1])); }
+  else $(p+'-color').textContent=_c;
   $(p+'-sign').textContent=info.ja;
 }
 function reset(){ $('result-view').hidden=true; $('form-view').hidden=false; window.scrollTo(0,0); }
@@ -984,7 +987,7 @@ if(/Line\/|Instagram|FBAN|FBAV|FB_IAB|Twitter|TikTok|musical_ly/i.test(navigator
 
 <script>
 // ===== バージョン管理（ツールを改定したら TOOL_VERSION を上げる） =====
-var TOOL_VERSION = '2026.10.16.2';
+var TOOL_VERSION = '2026.10.16.3';
 var TOOL_SOURCE_URL = '';/*@@SRC@@*/   // ← パソコンに保存した時に、元のURLが自動で書き込まれる
 var TOOL_FILE_NAME = '天体色数図自動計算ツール.html';
 (function(){
