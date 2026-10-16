@@ -241,6 +241,9 @@ input::placeholder{color:rgba(245,240,232,.3);}
   <div class="after">
     <div class="notes" id="calc-notes"></div>
     <div class="actions">
+      <div class="pdf-label wide">画像（JPEG）で保存　※スマホはこちら</div>
+      <button class="sub-btn pdf-pick jpg-pick" type="button" onclick="saveJPEG('navy')"><span class="pdf-chip navy"></span>ネイビー背景</button>
+      <button class="sub-btn pdf-pick jpg-pick" type="button" onclick="saveJPEG('white')"><span class="pdf-chip white"></span>白背景</button>
       <div class="pdf-label wide">PDF保存・印刷（背景を選択）</div>
       <button class="sub-btn pdf-pick" type="button" onclick="savePDF('navy')"><span class="pdf-chip navy"></span>ネイビー背景</button>
       <button class="sub-btn pdf-pick" type="button" onclick="savePDF('white')"><span class="pdf-chip white"></span>白背景</button>
@@ -984,7 +987,7 @@ if(/Line\/|Instagram|FBAN|FBAV|FB_IAB|Twitter|TikTok|musical_ly/i.test(navigator
 
 <script>
 // ===== バージョン管理（ツールを改定したら TOOL_VERSION を上げる） =====
-var TOOL_VERSION = '2026.10.13.1';
+var TOOL_VERSION = '2026.10.16.1';
 var TOOL_SOURCE_URL = '';/*@@SRC@@*/   // ← パソコンに保存した時に、元のURLが自動で書き込まれる
 var TOOL_FILE_NAME = '天体色数図自動計算ツール.html';
 (function(){
@@ -1062,6 +1065,111 @@ function downloadTool(){
     t._composing = false;
     setTimeout(function(){ t.dispatchEvent(new Event('input', {bubbles:true})); }, 0);
   }, true);
+})();
+</script>
+<script>
+// ===== 画像（JPEG）で保存：スマホでもそのまま保存・共有できるように =====
+(function(){
+  var W=1240, H=1754, K=W/210;           // A4縦（150dpi相当）・1mm＝K px
+  var SERIF="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif";
+  function svgImg(markup){
+    return new Promise(function(ok){
+      var im=new Image(); im.onload=function(){ ok(im); }; im.onerror=function(){ ok(null); };
+      im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(markup);
+    });
+  }
+  function chartMarkup(theme){
+    var chart=document.getElementById('celestial-chart');
+    var base=chart._navy||chart.innerHTML;
+    var box=document.createElement('div'); box.innerHTML=(theme==='white'?whitenChartSvg(base):base);
+    var svg=box.querySelector('svg'); if(!svg) return '';
+    if(theme!=='white') svg.querySelectorAll('rect').forEach(function(r){ r.setAttribute('fill','none'); });
+    svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    svg.setAttribute('width','1000'); svg.setAttribute('height','1000');
+    svg.removeAttribute('style');
+    return new XMLSerializer().serializeToString(svg);
+  }
+  function txt(id){ var e=document.getElementById(id); return e?e.textContent.trim():''; }
+  function dotColor(id){ var e=document.getElementById(id); return e?getComputedStyle(e).backgroundColor:'#888'; }
+  function rrect(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+  function badge(c,x,y,w,label,pre,P){
+    var h=118;
+    rrect(c,x,y,w,h,5); c.fillStyle=P.panel; c.fill(); c.lineWidth=2; c.strokeStyle=P.border; c.stroke();
+    c.textAlign='center'; c.textBaseline='alphabetic';
+    c.font=(P.white?'600 ':'')+'23px '+SERIF; c.fillStyle=P.gold; c.fillText(label,x+w/2,y+34);
+    var color=txt(pre+'-color'), sign=txt(pre+'-sign');
+    c.font='600 29px '+SERIF; var tw=Math.max(c.measureText(color).width,(c.font='21px '+SERIF, c.measureText(sign).width));
+    var dot=50, gap=14, total=dot+gap+tw, sx=x+(w-total)/2, cy=y+80;
+    c.beginPath(); c.arc(sx+dot/2,cy,dot/2,0,Math.PI*2); c.fillStyle=dotColor(pre+'-dot'); c.fill(); c.lineWidth=1.5; c.strokeStyle=P.dotLine; c.stroke();
+    c.textAlign='left'; c.font='600 29px '+SERIF; c.fillStyle=P.text; c.fillText(color,sx+dot+gap,cy-2);
+    c.font='21px '+SERIF; c.fillStyle=P.sub; c.fillText(sign,sx+dot+gap,cy+24);
+    return h;
+  }
+  function glow(c,x,y,w,h){ c.save(); c.shadowColor='#fff'; c.shadowBlur=26; c.fillStyle='#fff'; rrect(c,x,y,w,h,14); c.fill(); c.fill(); c.restore(); }
+  async function render(theme){
+    var white=theme==='white';
+    var P=white?{bg:'#fff',panel:'#fff',border:'#9C7A2C',gold:'#8B6914',text:'#1a1a1a',sub:'#555',dotLine:'rgba(0,0,0,.2)',title:'#8B6914',unmeiLabel:'#555',unmei:'#8B6914',info:'#555',white:true}
+                :{bg:null,panel:'#0f1030',border:'#C9A84C',gold:'#C9A84C',text:'#F5F0E8',sub:'rgba(245,240,232,.75)',dotLine:'rgba(255,255,255,.35)',title:'#C9A84C',unmeiLabel:'rgba(245,240,232,.8)',unmei:'#E8D5A3',info:'rgba(245,240,232,.6)',white:false};
+    try{ await Promise.all(['600 29px "Noto Serif JP"','italic 300 120px "Cormorant Garamond"'].map(function(f){ return document.fonts.load(f); })); }catch(e){}
+    var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var c=cv.getContext('2d');
+    // 背景
+    if(white){ c.fillStyle='#fff'; c.fillRect(0,0,W,H); }
+    else{
+      c.fillStyle='#07071a'; c.fillRect(0,0,W,H);
+      c.save(); c.translate(W/2,H/2); c.scale(1,(H*0.48)/(W*0.62));
+      var g=c.createRadialGradient(0,0,0,0,0,W*0.62); g.addColorStop(0,'#1a1a5e'); g.addColorStop(0.55,'#0d0d3b'); g.addColorStop(1,'#07071a');
+      c.fillStyle=g; c.fillRect(-W,-H*2,W*2,H*4); c.restore();
+    }
+    var CH=Math.round(145*K), cx=W/2, x0=cx-CH/2;
+    var blockH=30+24+118+24+CH+24+118+24+20, y=Math.round((H-blockH)/2);
+    // タイトル
+    c.textAlign='center'; c.font=(white?'600 ':'')+'30px '+SERIF; c.fillStyle=P.title;
+    if(white){ var _tw=c.measureText(txt('result-title')).width; glow(c,cx-_tw/2-16,y-6,_tw+32,46); c.fillStyle=P.title; }
+    c.fillText(txt('result-title'),cx,y+26); y+=30+24;
+    // 上段：男性色数・運命数・女性色数
+    var uw=230, bw=Math.round((CH-uw-24)/2);
+    badge(c,x0,y,bw,'男性色数','male',P);
+    badge(c,x0+CH-bw,y,bw,'女性色数','female',P);
+    if(white) glow(c,cx-uw/2+6,y-4,uw-12,130);
+    c.textAlign='center'; c.font=(white?'600 ':'')+'21px '+SERIF; c.fillStyle=P.unmeiLabel; c.fillText('運命数（誕生数）',cx,y+22);
+    c.font='italic 300 120px "Cormorant Garamond",Georgia,serif'; c.fillStyle=P.unmei; c.fillText(txt('unmei-display'),cx,y+118);
+    y+=118+24;
+    // 天体色数図（白背景の時は星屑も）
+    if(white){
+      var sd=stardustLayer(231/476,false).match(/src="([^"]+)"/);
+      if(sd){ var simg=await new Promise(function(ok){ var i=new Image(); i.onload=function(){ok(i);}; i.onerror=function(){ok(null);}; i.src=sd[1]; });
+        if(simg){ var S=CH*2.2; c.drawImage(simg,cx-S/2,y+CH/2-S/2,S,S); } }
+      // 文字まわりは白くぼかす（PDFと同じ）
+    }
+    var img=await svgImg(chartMarkup(theme)); if(img) c.drawImage(img,x0,y,CH,CH);
+    y+=CH+24;
+    // 統合色数
+    var tw=312; badge(c,cx-tw/2,y,tw,'統合色数','total',P); y+=118+24;
+    // 生年月日など
+    c.textAlign='center'; c.font='19px '+SERIF;
+    if(white){ var _iw=c.measureText(txt('calc-info')).width; glow(c,cx-_iw/2-14,y-6,_iw+28,30); }
+    c.fillStyle=P.info; c.fillText(txt('calc-info'),cx,y+16);
+    return cv;
+  }
+  function fileName(){ var t=txt('result-title').replace(/[\\\/:*?"<>|\s]/g,''); return (t||'天体色数図')+'.jpg'; }
+  window.saveJPEG=async function(theme){
+    var btns=document.querySelectorAll('.jpg-pick'); btns.forEach(function(b){ b.disabled=true; });
+    try{
+      var cv=await render(theme);
+      var blob=await new Promise(function(ok){ cv.toBlob(ok,'image/jpeg',0.92); });
+      var name=fileName();
+      var isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+      var file=null; try{ file=new File([blob],name,{type:'image/jpeg'}); }catch(e){}
+      if(isIOS && file && navigator.canShare && navigator.canShare({files:[file]})){
+        try{ await navigator.share({files:[file]}); }catch(e){}   // 「画像を保存」で写真アプリに入ります
+      } else {
+        var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
+      }
+    }catch(e){ alert('画像を作れませんでした。もう一度お試しください。'); }
+    btns.forEach(function(b){ b.disabled=false; });
+  };
+  window.__renderJPEG=render;
 })();
 </script>
 </body>
