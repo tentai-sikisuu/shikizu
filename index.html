@@ -241,12 +241,9 @@ input::placeholder{color:rgba(245,240,232,.3);}
   <div class="after">
     <div class="notes" id="calc-notes"></div>
     <div class="actions">
-      <div class="pdf-label wide">画像（JPEG）で保存　※スマホはこちら</div>
+      <div class="pdf-label wide">画像（JPEG）で保存（背景を選択）</div>
       <button class="sub-btn pdf-pick jpg-pick" type="button" onclick="saveJPEG('navy')"><span class="pdf-chip navy"></span>ネイビー背景</button>
       <button class="sub-btn pdf-pick jpg-pick" type="button" onclick="saveJPEG('white')"><span class="pdf-chip white"></span>白背景</button>
-      <div class="pdf-label wide">PDF保存・印刷（背景を選択）</div>
-      <button class="sub-btn pdf-pick" type="button" onclick="savePDF('navy')"><span class="pdf-chip navy"></span>ネイビー背景</button>
-      <button class="sub-btn pdf-pick" type="button" onclick="savePDF('white')"><span class="pdf-chip white"></span>白背景</button>
       <button class="sub-btn wide" type="button" onclick="reset()">別の人を出す</button>
     </div>
   </div>
@@ -987,7 +984,7 @@ if(/Line\/|Instagram|FBAN|FBAV|FB_IAB|Twitter|TikTok|musical_ly/i.test(navigator
 
 <script>
 // ===== バージョン管理（ツールを改定したら TOOL_VERSION を上げる） =====
-var TOOL_VERSION = '2026.10.16.1';
+var TOOL_VERSION = '2026.10.16.2';
 var TOOL_SOURCE_URL = '';/*@@SRC@@*/   // ← パソコンに保存した時に、元のURLが自動で書き込まれる
 var TOOL_FILE_NAME = '天体色数図自動計算ツール.html';
 (function(){
@@ -1120,6 +1117,8 @@ function downloadTool(){
       var g=c.createRadialGradient(0,0,0,0,0,W*0.62); g.addColorStop(0,'#1a1a5e'); g.addColorStop(0.55,'#0d0d3b'); g.addColorStop(1,'#07071a');
       c.fillStyle=g; c.fillRect(-W,-H*2,W*2,H*4); c.restore();
     }
+    // 中身をひとまわり大きく（1.1倍）
+    c.translate(W/2,H/2); c.scale(1.1,1.1); c.translate(-W/2,-H/2);
     var CH=Math.round(145*K), cx=W/2, x0=cx-CH/2;
     var blockH=30+24+118+24+CH+24+118+24+20, y=Math.round((H-blockH)/2);
     // タイトル
